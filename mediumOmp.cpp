@@ -4,6 +4,9 @@
 #include <vector>
 using namespace std;
 
+const int MAX_PHASE_SIZE = 1024;
+const int MAX_SUCC_SIZE = 1024;
+
 struct Graph {
   int n;
   vector<vector<int>> adj;
@@ -18,19 +21,16 @@ struct Graph {
 
 vector<double> OpenMpBrandes(Graph &G) {
   const int n = G.n;
-  const int MAX_PHASE_SIZE = 1024;
-  const int MAX_SUCC_SIZE = 1024;
   vector<double> BC(n, 0.0);
 
   for (int s = 0; s < n; ++s) {
-    vector<vector<int>> Succ(
-        n, vector<int>(MAX_SUCC_SIZE, -1));
-    vector<atomic<int>> Succ_size(n);  
-    vector<atomic<int>> sigma(n);       
-    vector<atomic<int>> d(n);            
+    vector<vector<int>> Succ(n, vector<int>(MAX_SUCC_SIZE, -1));
+    vector<atomic<int>> Succ_size(n);
+    vector<atomic<int>> sigma(n);
+    vector<atomic<int>> d(n);
     vector<vector<int>> S(n, vector<int>(MAX_PHASE_SIZE));
-    vector<atomic<int>> S_size(n);  
-    vector<double> delta(n, 0.0);   
+    vector<atomic<int>> S_size(n);
+    vector<double> delta(n, 0.0);
 
     for (int i = 0; i < n; ++i) {
       sigma[i] = 0;
@@ -95,20 +95,31 @@ vector<double> OpenMpBrandes(Graph &G) {
 }
 
 int main() {
-  Graph G(6);
-  G.add_edge(0, 1);
-  G.add_edge(0, 2);
-  G.add_edge(1, 3);
-  G.add_edge(2, 3);
-  G.add_edge(3, 4);
-  G.add_edge(4, 5);
+  ifstream file("graph.txt");
 
-  vector<double> BC = OpenMpBrandes(G);
+  int n, m;
+  file >> n >> m;
 
-  cout << "Betweenness Centrality Scores:\n";
-  for (int v = 0; v < BC.size(); ++v) {
-    cout << "Vertex " << v << ": " << BC[v] << "\n";
+  Graph G(n);
+  for (int i = 0; i < m; ++i) {
+    int u, v;
+    file >> u >> v;
+    G.add_edge(u, v);
   }
+
+  auto start = chrono::high_resolution_clock::now();
+  vector<double> BC = OpenMpBrandes(G);
+  auto end = chrono::high_resolution_clock::now();
+
+  ofstream out("output.txt");
+
+  out << "Betweenness Centrality Scores:\n";
+  for (int v = 0; v < BC.size(); ++v) {
+    out << "Vertex " << v << ": " << BC[v] << "\n";
+  }
+  cout << "Time: "
+       << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+       << "ms\n";
 
   return 0;
 }

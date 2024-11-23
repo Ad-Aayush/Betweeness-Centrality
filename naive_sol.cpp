@@ -13,8 +13,6 @@ struct Graph {
   }
 };
 
-
-
 std::vector<double> NaiveBetweeness(Graph& G) {
   int n = G.n;
   std::vector<double> BC(n, 0.0);
@@ -65,20 +63,26 @@ std::vector<double> NaiveBetweeness(Graph& G) {
 }
 
 int main() {
-  Graph G(6);
-  G.add_edge(0, 1);
-  G.add_edge(0, 2);
-  G.add_edge(1, 3);
-  G.add_edge(2, 3);
-  G.add_edge(3, 4);
-  G.add_edge(4, 5);
+  ifstream file("graph.txt");
+
+  int n, m;
+  file >> n >> m;
+
+  Graph G(n);
+  for (int i = 0; i < m; ++i) {
+    int u, v;
+    file >> u >> v;
+    G.add_edge(u, v);
+  }
 
   std::vector<double> BC = NaiveBetweeness(G);
 
   // Print the betweenness centrality scores
-  std::cout << "Betweenness Centrality Scores:\n";
+  ofstream out("output.txt");
+
+  out << "Betweenness Centrality Scores:\n";
   for (int v = 0; v < BC.size(); ++v) {
-    std::cout << "Vertex " << v << ": " << BC[v] << "\n";
+    out << "Vertex " << v << ": " << BC[v] << "\n";
   }
 
   return 0;

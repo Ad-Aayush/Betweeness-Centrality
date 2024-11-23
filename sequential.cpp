@@ -32,7 +32,7 @@ std::vector<double> SequentialBrandes(Graph &G) {
     std::queue<int> Q;
     Q.push(s);
 
-    while(Q.size()) {
+    while (Q.size()) {
       int v = Q.front();
       Q.pop();
       S.push(v);
@@ -67,21 +67,32 @@ std::vector<double> SequentialBrandes(Graph &G) {
 }
 
 int main() {
-  Graph G(6);
-  G.add_edge(0, 1);
-  G.add_edge(0, 2);
-  G.add_edge(1, 3);
-  G.add_edge(2, 3);
-  G.add_edge(3, 4);
-  G.add_edge(4, 5);
+  ifstream file("graph.txt");
 
+  int n, m;
+  file >> n >> m;
+
+  Graph G(n);
+  for (int i = 0; i < m; ++i) {
+    int u, v;
+    file >> u >> v;
+    G.add_edge(u, v);
+  }
+
+  auto start = chrono::high_resolution_clock::now();
   std::vector<double> BC = SequentialBrandes(G);
+  auto end = chrono::high_resolution_clock::now();
 
   // Print the betweenness centrality scores
-  std::cout << "Betweenness Centrality Scores:\n";
+  ofstream out("output.txt");
+
+  out << "Betweenness Centrality Scores:\n";
   for (int v = 0; v < BC.size(); ++v) {
-    std::cout << "Vertex " << v << ": " << BC[v] << "\n";
+    out << "Vertex " << v << ": " << BC[v] << "\n";
   }
+  cout << "Time: "
+       << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+       << "ms\n";
 
   return 0;
 }
