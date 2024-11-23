@@ -49,7 +49,7 @@ vector<double> OpenMpBrandes(Graph &G) {
     while (S_size[phase] > 0) {
       S_size[phase + 1] = 0;
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic, 10)
       for (int i = 0; i < S_size[phase].load(); ++i) {
         int v = S[phase][i];
         for (int w : G.adj[v]) {
@@ -72,7 +72,7 @@ vector<double> OpenMpBrandes(Graph &G) {
 
     while (phase > 0) {
       phase--;
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic, 10)
       for (int i = 0; i < S_size[phase].load(); ++i) {
         int w = S[phase][i];
         double dsw = 0.0;

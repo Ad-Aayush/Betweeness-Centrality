@@ -1,11 +1,13 @@
 #include <bits/stdc++.h>
+
+#include <vector>
 using namespace std;
 
 struct Graph {
   int n;
-  std::vector<std::vector<int>> adj;
+  vector<vector<int>> adj;
 
-  Graph(int vertices) : n(vertices), adj(vertices, std::vector<int>()) {}
+  Graph(int vertices) : n(vertices), adj(vertices) {}
 
   void add_edge(int u, int v) {
     adj[u].push_back(v);
@@ -13,56 +15,76 @@ struct Graph {
   }
 };
 
-std::vector<double> SequentialBrandes(Graph &G) {
-  int n = G.n;
-  std::vector<double> BC(n, 0.0);
+vector<double> SeqBrandes(Graph &G) {
+  const int n = G.n;
+  const int MAX_PHASE_SIZE = 1024;
+  const int MAX_SUCC_SIZE = 1024;
+  vector<double> BC(n, 0.0);
 
   for (int s = 0; s < n; ++s) {
-    std::vector<std::vector<int>> P(n);
-    std::vector<int> sigma(n, 0);
-    std::vector<int> d(n, -1);
+    vector<vector<int>> Succ(n, vector<int>(MAX_SUCC_SIZE, -1));
+    vector<int> Succ_size(n);
+    vector<int> sigma(n);
+    vector<int> d(n);
+    vector<vector<int>> S(n, vector<int>(MAX_PHASE_SIZE));
+    vector<int> S_size(n + 1);
+    vector<double> delta(n, 0.0);
 
+    for (int i = 0; i < n; ++i) {
+      sigma[i] = 0;
+      d[i] = -1;
+      Succ_size[i] = 0;
+      delta[i] = 0.0;
+      S_size[i] = 0;
+    }
     sigma[s] = 1;
     d[s] = 0;
+    S[0][0] = s;
+    S_size[0] = 1;
 
     int phase = 0;
-    std::stack<int> S;
-    S.push(s);
 
-    std::queue<int> Q;
-    Q.push(s);
+    while (S_size[phase] > 0) {
+      S_size[phase + 1] = 0;
 
-    while (Q.size()) {
-      int v = Q.front();
-      Q.pop();
-      S.push(v);
-
-      for (int w : G.adj[v]) {
-        if (d[w] < 0) {
-          Q.push(w);
-          d[w] = d[v] + 1;
-        }
-        if (d[w] == d[v] + 1) {
-          sigma[w] += sigma[v];
-          P[w].push_back(v);
+      for (int i = 0; i < S_size[phase]; ++i) {
+        int v = S[phase][i];
+        for (int w : G.adj[v]) {
+          if (d[w] == -1) {
+            int pos = S_size[phase + 1]++;
+            S[phase + 1][pos] = w;
+            d[w] = d[v] + 1;
+          }
+          if (d[w] == d[v] + 1) {
+            sigma[w] += sigma[v];
+            int pos = Succ_size[v]++;
+            Succ[v][pos] = w;
+          }
         }
       }
+      phase++;
     }
 
-    std::vector<double> delta(n, 0.0);
+    while (phase > 0) {
+      phase--;
+      for (int i = 0; i < S_size[phase]; ++i) {
+        int w = S[phase][i];
+        double dsw = 0.0;
+        double sw = sigma[w];
 
-    while (!S.empty()) {
-      int w = S.top();
-      S.pop();
-      for (int v : P[w]) {
-        double c = (static_cast<double>(sigma[v]) / sigma[w]) * (1 + delta[w]);
-        delta[v] += c;
-      }
-      if (w != s) {
-        BC[w] += delta[w];
+        for (int j = 0; j < Succ_size[w]; ++j) {
+          int v = Succ[w][j];
+          dsw += (sw / sigma[v]) * (1.0 + delta[v]);
+        }
+        delta[w] = dsw;
+
+        if (w != s) {
+          BC[w] += dsw;
+        }
       }
     }
   }
+
   return BC;
 }
 
@@ -80,10 +102,9 @@ int main() {
   }
 
   auto start = chrono::high_resolution_clock::now();
-  std::vector<double> BC = SequentialBrandes(G);
+  vector<double> BC = SeqBrandes(G);
   auto end = chrono::high_resolution_clock::now();
 
-  // Print the betweenness centrality scores
   ofstream out("output.txt");
 
   out << "Betweenness Centrality Scores:\n";

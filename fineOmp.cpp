@@ -49,9 +49,9 @@ vector<double> OpenMpBrandes(Graph &G) {
       S_size[phase + 1] = 0;
 
 #pragma omp parallel for
-      for (int i = 0; i < S_size[phase].load(); ++i) {
+      for (int i = 0; i < S_size[phase]; ++i) {
         int v = S[phase][i];
-#pragma omp parallel for
+#pragma omp parallel for 
         for (int w : G.adj[v]) {
           int dw = -1;
           if (d[w].compare_exchange_strong(dw, d[v] + 1)) {
@@ -59,7 +59,7 @@ vector<double> OpenMpBrandes(Graph &G) {
             S[phase + 1][pos] = w;
           }
           if (d[w].load() == d[v] + 1) {
-            sigma[w].fetch_add(sigma[v].load());
+            sigma[w].fetch_add(sigma[v]);
             int pos = Succ_size[v].fetch_add(1);
             if (pos < MAX_SUCC_SIZE) {
               Succ[v][pos] = w;
@@ -73,14 +73,14 @@ vector<double> OpenMpBrandes(Graph &G) {
     while (phase > 0) {
       phase--;
 #pragma omp parallel for
-      for (int i = 0; i < S_size[phase].load(); ++i) {
+      for (int i = 0; i < S_size[phase]; ++i) {
         int w = S[phase][i];
         double dsw = 0.0;
-        double sw = sigma[w].load();
+        double sw = sigma[w];
 
-        for (int j = 0; j < Succ_size[w].load(); ++j) {
+        for (int j = 0; j < Succ_size[w]; ++j) {
           int v = Succ[w][j];
-          dsw += (sw / sigma[v].load()) * (1.0 + delta[v]);
+          dsw += (sw / sigma[v]) * (1.0 + delta[v]);
         }
         delta[w] = dsw;
 

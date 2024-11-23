@@ -2,8 +2,8 @@
 using namespace std;
 
 int main() {
-  int n = 100;
-  int m = 10 * n;
+  int n = 1024;
+  int m = 8 * n;
 
   // Generate random graph
   srand(time(0));
