@@ -70,7 +70,6 @@ vector<double> OpenMpBrandes(Graph &G) {
       phase++;
     }
 
-    // Phase II: Back-propagation
     while (phase > 0) {
       phase--;
 #pragma omp parallel for
