@@ -192,9 +192,6 @@ vector<double> DynamicMediumOptimized(Graph& G, ThreadPool& pool) {
       int chunk_size =
           (current_phase_size + tasks_per_phase - 1) / tasks_per_phase;
 
-      chunk_size = n / 2;
-      tasks_per_phase = (current_phase_size + chunk_size - 1) / chunk_size;
-
       for (int t = 0; t < tasks_per_phase; ++t) {
         int start = t * chunk_size;
         int end = min(start + chunk_size, current_phase_size);
