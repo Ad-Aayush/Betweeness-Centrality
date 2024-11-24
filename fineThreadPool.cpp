@@ -14,7 +14,7 @@ using namespace std;
 
 const int MAX_PHASE_SIZE = 1024;
 const int MAX_SUCC_SIZE = 1024;
-const int K = 8;
+const int K = 32;
 
 struct Graph {
   int n;
@@ -34,7 +34,6 @@ class ThreadPool {
   ~ThreadPool();
 
   void enqueue(function<void()> task);
-
   void wait_for_tasks();
 
  private:
@@ -45,6 +44,7 @@ class ThreadPool {
   condition_variable condition;
   bool stop;
 
+  // For tracking unfinished tasks
   mutex tasks_left_mutex;
   condition_variable tasks_left_condition;
   int tasks_left;
@@ -56,6 +56,7 @@ ThreadPool::ThreadPool(size_t num_threads) : stop(false), tasks_left(0) {
       while (true) {
         function<void()> task;
 
+        // Fetch a task from the queue
         {
           unique_lock<mutex> lock(this->queue_mutex);
           this->condition.wait(
@@ -105,26 +106,24 @@ ThreadPool::~ThreadPool() {
   for (thread& worker : workers) worker.join();
 }
 
-// ProcessOne Function: Processes a single node in the current phase
-void ProcessOne(Graph& G, vector<vector<int>>& S, vector<atomic<int>>& S_size,
-                vector<atomic<int>>& d, vector<atomic<int>>& sigma,
-                vector<vector<int>>& Succ, vector<atomic<int>>& Succ_size,
-                int phase, int ind) {
-  int v = S[phase][ind];
-  for (int w : G.adj[v]) {
-    int dw = -1;
-    if (d[w].compare_exchange_strong(dw, d[v].load() + 1)) {
-      int pos = S_size[phase + 1].fetch_add(1);
-      if (pos < MAX_PHASE_SIZE) {
-        S[phase + 1][pos] = w;
-      }
+// Renamed to processOneW and adjusted to handle a single neighbor 'w'
+void processOneW(Graph& G, vector<vector<int>>& S, vector<atomic<int>>& S_size,
+                 vector<atomic<int>>& d, vector<atomic<int>>& sigma,
+                 vector<vector<int>>& Succ, vector<atomic<int>>& Succ_size,
+                 int phase, int v, int w) {
+  int dw = -1;
+  if (d[w].compare_exchange_strong(dw, d[v].load() + 1)) {
+    // Successfully set distance, add w to the next phase
+    int pos = S_size[phase + 1].fetch_add(1);
+    if (pos < MAX_PHASE_SIZE) {
+      S[phase + 1][pos] = w;
     }
-    if (d[w].load() == d[v].load() + 1) {
-      sigma[w].fetch_add(sigma[v].load());
-      int pos = Succ_size[v].fetch_add(1);
-      if (pos < MAX_SUCC_SIZE) {
-        Succ[v][pos] = w;
-      }
+  }
+  if (d[w].load() == d[v].load() + 1) {
+    sigma[w].fetch_add(sigma[v].load());
+    int pos = Succ_size[v].fetch_add(1);
+    if (pos < MAX_SUCC_SIZE) {
+      Succ[v][pos] = w;
     }
   }
 }
@@ -141,7 +140,7 @@ vector<double> DynamicMediumOptimized(Graph& G, ThreadPool& pool) {
     vector<atomic<int>> sigma(n);
     vector<atomic<int>> d(n);
     vector<vector<int>> S(n, vector<int>(MAX_PHASE_SIZE));
-    vector<atomic<int>> S_size(n);
+    vector<atomic<int>> S_size(n + 1);
     vector<double> delta(n, 0.0);
 
     for (int i = 0; i < n; ++i) {
@@ -162,20 +161,27 @@ vector<double> DynamicMediumOptimized(Graph& G, ThreadPool& pool) {
       S_size[phase + 1].store(0);
       int current_phase_size = S_size[phase].load();
 
-      int tasks_per_phase = K;
-      int chunk_size =
-          (current_phase_size + tasks_per_phase - 1) / tasks_per_phase;
+      for (int i = 0; i < current_phase_size; ++i) {
+        int v = S[phase][i];
 
-      for (int t = 0; t < tasks_per_phase; ++t) {
-        int start = t * chunk_size;
-        int end = min(start + chunk_size, current_phase_size);
-        if (start >= end) continue;
+        int chunk_size = 512;
 
-        pool.enqueue([&, start, end]() {
-          for (int i = start; i < end; ++i) {
-            ProcessOne(G, S, S_size, d, sigma, Succ, Succ_size, phase, i);
-          }
-        });
+        for (int st = 0; st < G.adj[v].size(); st += chunk_size) {
+          int end = min(st + chunk_size, (int)G.adj[v].size());
+
+          pool.enqueue([&, phase, v, st, end]() {
+            for (int j = st; j < end; ++j) {
+              int w = G.adj[v][j];
+              processOneW(G, S, S_size, d, sigma, Succ, Succ_size, phase, v, w);
+            }
+          });
+        }
+        // for (int w : G.adj[v]) {
+        //   pool.enqueue([&, phase, v, w]() {
+        //     processOneW(G, S, S_size, d, sigma, Succ, Succ_size, phase, v,
+        //     w);
+        //   });
+        // }
       }
 
       pool.wait_for_tasks();
