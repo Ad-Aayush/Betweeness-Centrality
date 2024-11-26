@@ -3,6 +3,9 @@
 #include <vector>
 using namespace std;
 
+int MAX_PHASE_SIZE = 1024;
+int MAX_SUCC_SIZE = 128;
+
 struct Graph {
   int n;
   vector<vector<int>> adj;
@@ -17,11 +20,12 @@ struct Graph {
 
 vector<double> SeqBrandes(Graph &G) {
   const int n = G.n;
-  const int MAX_PHASE_SIZE = 1024;
-  const int MAX_SUCC_SIZE = 1024;
   vector<double> BC(n, 0.0);
 
   for (int s = 0; s < n; ++s) {
+    if (s % 100 == 0) {
+      cout << "Processing source " << s << "\n";
+    }
     vector<vector<int>> Succ(n, vector<int>(MAX_SUCC_SIZE, -1));
     vector<int> Succ_size(n);
     vector<int> sigma(n);
@@ -88,9 +92,12 @@ vector<double> SeqBrandes(Graph &G) {
   return BC;
 }
 
-int main() {
-  ifstream file("graph.txt");
-
+int main(int argc, char *argv[]) {
+  if (argc != 2) {
+    cerr << "Usage: " << argv[0] << " <graph file>\n";
+    return 1;
+  }
+  ifstream file(argv[1]);
   int n, m;
   file >> n >> m;
 
@@ -100,6 +107,7 @@ int main() {
     file >> u >> v;
     G.add_edge(u, v);
   }
+  MAX_PHASE_SIZE = max(n, MAX_PHASE_SIZE);
 
   auto start = chrono::high_resolution_clock::now();
   vector<double> BC = SeqBrandes(G);

@@ -4,8 +4,10 @@
 #include <vector>
 using namespace std;
 
-const int MAX_PHASE_SIZE = 1024;
-const int MAX_SUCC_SIZE = 1024;
+int K;
+
+int MAX_PHASE_SIZE = 1024;
+int MAX_SUCC_SIZE = 1024;
 
 struct Graph {
   int n;
@@ -24,6 +26,9 @@ vector<double> OpenMpBrandes(Graph &G) {
   vector<double> BC(n, 0.0);
 
   for (int s = 0; s < n; ++s) {
+    if (s % 100 == 0) {
+      cout << "Processing source " << s << "\n";
+    }
     vector<vector<int>> Succ(n, vector<int>(MAX_SUCC_SIZE, -1));
     vector<atomic<int>> Succ_size(n);
     vector<atomic<int>> sigma(n);
@@ -49,7 +54,7 @@ vector<double> OpenMpBrandes(Graph &G) {
     while (S_size[phase] > 0) {
       S_size[phase + 1] = 0;
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(K)
       for (int i = 0; i < S_size[phase].load(); ++i) {
         int v = S[phase][i];
         for (int w : G.adj[v]) {
@@ -72,7 +77,7 @@ vector<double> OpenMpBrandes(Graph &G) {
 
     while (phase > 0) {
       phase--;
-#pragma omp parallel for
+#pragma omp parallel for num_threads(K)
       for (int i = 0; i < S_size[phase].load(); ++i) {
         int w = S[phase][i];
         double dsw = 0.0;
@@ -94,11 +99,20 @@ vector<double> OpenMpBrandes(Graph &G) {
   return BC;
 }
 
-int main() {
-  ifstream file("graph.txt");
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
+    cerr << "Usage: " << argv[0] << " <file_name> <num_threads>\n";
+    return 1;
+  }
+  string file_name = argv[1];
+  K = atoi(argv[2]);
+
+  ifstream file(file_name);
 
   int n, m;
   file >> n >> m;
+
+  MAX_PHASE_SIZE = max(n, MAX_PHASE_SIZE);
 
   Graph G(n);
   for (int i = 0; i < m; ++i) {

@@ -2,7 +2,7 @@
 
 #include <vector>
 using namespace std;
-
+int K;
 struct Graph {
   int n;
   vector<vector<int>> adj;
@@ -20,8 +20,8 @@ vector<double> SeqBrandes(Graph &G) {
   const int MAX_PHASE_SIZE = 1024;
   const int MAX_SUCC_SIZE = 1024;
   vector<double> BC(n, 0.0);
-  
-#pragma omp parallel for
+
+#pragma omp parallel for num_threads(K)
   for (int s = 0; s < n; ++s) {
     vector<vector<int>> Succ(n, vector<int>(MAX_SUCC_SIZE, -1));
     vector<int> Succ_size(n);
@@ -89,8 +89,15 @@ vector<double> SeqBrandes(Graph &G) {
   return BC;
 }
 
-int main() {
-  ifstream file("graph.txt");
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
+    cerr << "Usage: " << argv[0] << " <graph file> <num_threads>\n";
+    return 1;
+  }
+  string file_name = argv[1];
+  K = atoi(argv[2]);
+
+  ifstream file(file_name);
 
   int n, m;
   file >> n >> m;

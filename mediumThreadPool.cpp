@@ -12,9 +12,9 @@
 
 using namespace std;
 
-const int MAX_PHASE_SIZE = 1024;
-const int MAX_SUCC_SIZE = 1024;
-const int K = 8;
+int MAX_PHASE_SIZE = 1024;
+int MAX_SUCC_SIZE = 128;
+int K = 8;
 
 struct Graph {
   int n;
@@ -136,6 +136,9 @@ vector<double> DynamicMediumOptimized(Graph& G, ThreadPool& pool) {
   vector<vector<double>> BC_accumulators(K, vector<double>(n, 0.0));
 
   for (int s = 0; s < n; ++s) {
+    if (s % 100 == 0) {
+      cout << "Processing source " << s << "\n";
+    }
     vector<vector<int>> Succ(n, vector<int>(MAX_SUCC_SIZE, -1));
     vector<atomic<int>> Succ_size(n);
     vector<atomic<int>> sigma(n);
@@ -223,8 +226,13 @@ vector<double> DynamicMediumOptimized(Graph& G, ThreadPool& pool) {
   return BC;
 }
 
-int main() {
-  ifstream file("graph.txt");
+int main(int argc, char* argv[]) {
+  if (argc != 3) {
+    cerr << "Usage: " << argv[0] << " <graph file> <number of threads>\n";
+    return 1;
+  }
+  ifstream file(argv[1]);
+  K = atoi(argv[2]);
   if (!file.is_open()) {
     cerr << "Error opening graph.txt\n";
     return 1;
@@ -232,6 +240,7 @@ int main() {
 
   int n, m;
   file >> n >> m;
+  MAX_PHASE_SIZE = max(n, MAX_PHASE_SIZE);
 
   Graph G(n);
   for (int i = 0; i < m; ++i) {

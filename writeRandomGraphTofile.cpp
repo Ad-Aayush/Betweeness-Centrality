@@ -34,8 +34,12 @@ bool CheckConnected(int n, vector<pair<int, int>> &edges) {
   return true;
 }
 
-int main() {
-  int n = 1e4;
+int main(int argc, char *argv[]) {
+  if (argc != 2) {
+    cerr << "Usage: " << argv[0] << " <number of vertices>\n";
+    return 1;
+  }
+  int n = atoi(argv[1]);
   int m = 8 * n;
 
   // Generate random graph
@@ -55,7 +59,8 @@ int main() {
   }
 
   // Write graph to file
-  ofstream file("graph.txt");
+  string filename = "Graphs/graph-" + to_string(n) + ".txt";
+  ofstream file(filename);
   file << n << " " << m << endl;
   for (auto [u, v] : edges) {
     file << u << " " << v << endl;

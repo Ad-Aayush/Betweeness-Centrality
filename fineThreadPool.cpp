@@ -12,9 +12,9 @@
 
 using namespace std;
 
-const int MAX_PHASE_SIZE = 1024;
-const int MAX_SUCC_SIZE = 1024;
-const int K = 32;
+int MAX_PHASE_SIZE = 1024;
+int MAX_SUCC_SIZE = 1024;
+int K = 32;
 
 struct Graph {
   int n;
@@ -135,6 +135,9 @@ vector<double> DynamicMediumOptimized(Graph& G, ThreadPool& pool) {
   vector<vector<double>> BC_accumulators(K, vector<double>(n, 0.0));
 
   for (int s = 0; s < n; ++s) {
+    if (s % 100 == 0) {
+      cout << "Processing source " << s << "\n";
+    }
     vector<vector<int>> Succ(n, vector<int>(MAX_SUCC_SIZE, -1));
     vector<atomic<int>> Succ_size(n);
     vector<atomic<int>> sigma(n);
@@ -176,12 +179,6 @@ vector<double> DynamicMediumOptimized(Graph& G, ThreadPool& pool) {
             }
           });
         }
-        // for (int w : G.adj[v]) {
-        //   pool.enqueue([&, phase, v, w]() {
-        //     processOneW(G, S, S_size, d, sigma, Succ, Succ_size, phase, v,
-        //     w);
-        //   });
-        // }
       }
 
       pool.wait_for_tasks();
@@ -197,9 +194,6 @@ vector<double> DynamicMediumOptimized(Graph& G, ThreadPool& pool) {
       int tasks_per_phase = K;
       int chunk_size =
           (current_phase_size + tasks_per_phase - 1) / tasks_per_phase;
-
-      chunk_size = n / 2;
-      tasks_per_phase = (current_phase_size + chunk_size - 1) / chunk_size;
 
       for (int t = 0; t < tasks_per_phase; ++t) {
         int start = t * chunk_size;
@@ -232,8 +226,15 @@ vector<double> DynamicMediumOptimized(Graph& G, ThreadPool& pool) {
   return BC;
 }
 
-int main() {
-  ifstream file("graph.txt");
+int main(int argc, char* argv[]) {
+  if (argc != 3) {
+    cerr << "Usage: " << argv[0] << " <file_name> <num_threads>"
+         << "\n";
+    return 1;
+  }
+  string file_name = argv[1];
+  K = atoi(argv[2]);
+  ifstream file(file_name);
   if (!file.is_open()) {
     cerr << "Error opening graph.txt\n";
     return 1;
@@ -241,6 +242,8 @@ int main() {
 
   int n, m;
   file >> n >> m;
+
+  MAX_PHASE_SIZE = max(n, MAX_PHASE_SIZE);
 
   Graph G(n);
   for (int i = 0; i < m; ++i) {
