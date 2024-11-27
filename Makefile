@@ -1,28 +1,28 @@
-all: Coarse CoarseOmp FineOmp FineThreadPool MediumOmp MediumThreadPool MediumChunk Sequential
+all: coarse coarseOmp fineOmp fineThreadPool mediumOmp mediumThreadPool mediumChunk sequential
 
-Coarse: coarse.cpp
-	g++ -o coarse coarse.cpp -fopenmp
+coarse: Src_Prjt-CS22BTECH11001-coarse.cpp
+	g++ -o coarse Src_Prjt-CS22BTECH11001-coarse.cpp -fopenmp
 
-CoarseOmp: coarseOmp.cpp
-	g++ -o coarseomp coarseOmp.cpp -fopenmp
+coarseOmp: Src_Prjt-CS22BTECH11001-coarseOmp.cpp
+	g++ -o coarseOmp Src_Prjt-CS22BTECH11001-coarseOmp.cpp -fopenmp
 
-FineOmp: fineOmp.cpp
-	g++ -o fineomp fineOmp.cpp -fopenmp
+fineOmp: Src_Prjt-CS22BTECH11001-fineOmp.cpp
+	g++ -o fineOmp Src_Prjt-CS22BTECH11001-fineOmp.cpp -fopenmp
 
-FineThreadPool: fineThreadPool.cpp
-	g++ -o finethreadpool fineThreadPool.cpp -fopenmp
+fineThreadPool: Src_Prjt-CS22BTECH11001-fineThreadPool.cpp
+	g++ -o fineThreadPool Src_Prjt-CS22BTECH11001-fineThreadPool.cpp -fopenmp
 
-MediumOmp: mediumOmp.cpp
-	g++ -o mediumomp mediumOmp.cpp -fopenmp
+mediumOmp: Src_Prjt-CS22BTECH11001-mediumOmp.cpp
+	g++ -o mediumOmp Src_Prjt-CS22BTECH11001-mediumOmp.cpp -fopenmp
 
-MediumThreadPool: mediumThreadPool.cpp
-	g++ -o mediumthreadpool mediumThreadPool.cpp -fopenmp
+mediumThreadPool: Src_Prjt-CS22BTECH11001-mediumThreadPool.cpp
+	g++ -o mediumThreadPool Src_Prjt-CS22BTECH11001-mediumThreadPool.cpp -fopenmp
 
-MediumChunk: mediumChunk.cpp
-	g++ -o mediumchunk mediumChunk.cpp -fopenmp
+mediumChunk: Src_Prjt-CS22BTECH11001-mediumChunk.cpp
+	g++ -o mediumChunk Src_Prjt-CS22BTECH11001-mediumChunk.cpp -fopenmp
 
-Sequential: sequential.cpp
-	g++ -o sequential sequential.cpp -fopenmp
+sequential: Src_Prjt-CS22BTECH11001-sequential.cpp
+	g++ -o sequential Src_Prjt-CS22BTECH11001-sequential.cpp -fopenmp
 
 clean:
-	rm coarse coarseomp fineomp finethreadpool mediumomp mediumthreadpool mediumchunk sequential
+	rm -f coarse coarseOmp fineOmp fineThreadPool mediumOmp mediumThreadPool mediumChunk sequential
