@@ -20,7 +20,7 @@ struct Graph {
   }
 };
 
-vector<double> OpenMpBrandes(Graph &G) {
+vector<double> OpenMpFineBrandes(Graph &G) {
   const int n = G.n;
   vector<double> BC(n, 0.0);
 
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
   }
 
   auto start = chrono::high_resolution_clock::now();
-  vector<double> BC = OpenMpBrandes(G);
+  vector<double> BC = OpenMpFineBrandes(G);
   auto end = chrono::high_resolution_clock::now();
 
   ofstream out("output.txt");

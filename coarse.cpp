@@ -83,7 +83,7 @@ void ProcessOneSource(Graph &G, int s) {
   }
 }
 
-void SeqBrandes(Graph &G) {
+void CourseBrandes(Graph &G) {
   const int n = G.n;
 
   int chunk_size = (n + K - 1) / K;
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
   BC.resize(n, 0.0);
 
   auto start = chrono::high_resolution_clock::now();
-  SeqBrandes(G);
+  CourseBrandes(G);
   auto end = chrono::high_resolution_clock::now();
 
   ofstream out("output.txt");
