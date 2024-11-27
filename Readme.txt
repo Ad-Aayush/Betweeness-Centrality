@@ -13,13 +13,12 @@ Jash Jhatakia (CS22BTECH11028)
 - `Src_Prjt-CS22BTECH11001-fineOmp.cpp` : Contains the code for the fine-grained parallel implementation of the Brandes Algorithm using OpenMP. All the neighbours of a BFS node are given to different threads. While performing BFS, the task of exploring the neighbors of
 a vertex is parallelized. Each thread does the task of exploring the set of neighbors of the vertex.
 - `Src_Prjt-CS22BTECH11001-fineThreadPool.cpp` : Contains the code for the fine-grained parallel implementation of the Brandes Algorithm using ThreadPool. 
-- `Src_Prjt-CS22BTECH11001-mediumChunk.cpp` : Contains the code for the medium-grained parallel implementation of the Brandes Algorithm using OpenMP. Here the exploration of a vertex in one level is parallelized and each thread is given a chunk of vertices to explore.
+- `Src_Prjt-CS22BTECH11001-mediumChunk.cpp` : Contains the code for the medium-grained parallel implementation of the Brandes Algorithm. Here the exploration of a vertex in one level is parallelized and each thread is given a chunk of vertices to explore.
 - `Src_Prjt-CS22BTECH11001-mediumOmp.cpp` : Contains the code for the medium-grained parallel implementation of the Brandes Algorithm using OpenMP. 
 - `Src_Prjt-CS22BTECH11001-mediumThreadPool.cpp` : Contains the code for the medium-grained parallel implementation of the Brandes Algorithm using ThreadPool.
 - `Src_Prjt-CS22BTECH11001-sequential.cpp` : Contains the code for the sequential implementation of the Brandes Algorithm.
 - `Src_Prjt-CS22BTECH11001-writeRandomGraphTofile.cpp` : Contains the code to generate a random graph with a given number of vertices and write it to a file.
 - `Makefile` : Contains the commands to compile the code.
-- `Readme.txt` : Contains the instructions to run the code and basic details about the files.
 - `Rpt_Prjt-CS22BTECH11001.pdf` : Contains the report of the project.
 - `Turitin_Prjt-CS22BTECH11001.pdf` : Contains the Turnitin report of the project.\
  **NOTE:** The report got 25% percent similarity as per Turnitin, but the similarity is only in the definitions, standard theorems, certain sections of the pseudo codes taken from papers. The observations and analysis has no similarity.
