@@ -13,7 +13,7 @@
 using namespace std;
 
 int MAX_PHASE_SIZE = 1024;
-int MAX_SUCC_SIZE = 1024;
+int MAX_SUCC_SIZE = 128;
 int K = 32;
 
 struct Graph {

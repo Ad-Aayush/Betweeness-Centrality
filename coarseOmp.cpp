@@ -3,6 +3,10 @@
 #include <vector>
 using namespace std;
 int K;
+
+int MAX_PHASE_SIZE = 1024;
+int MAX_SUCC_SIZE = 128;
+
 struct Graph {
   int n;
   vector<vector<int>> adj;
@@ -17,8 +21,6 @@ struct Graph {
 
 vector<double> SeqBrandes(Graph &G) {
   const int n = G.n;
-  const int MAX_PHASE_SIZE = 1024;
-  const int MAX_SUCC_SIZE = 1024;
   vector<double> BC(n, 0.0);
 
 #pragma omp parallel for num_threads(K)
@@ -47,7 +49,6 @@ vector<double> SeqBrandes(Graph &G) {
 
     while (S_size[phase] > 0) {
       S_size[phase + 1] = 0;
-
       for (int i = 0; i < S_size[phase]; ++i) {
         int v = S[phase][i];
         for (int w : G.adj[v]) {
@@ -101,6 +102,8 @@ int main(int argc, char *argv[]) {
 
   int n, m;
   file >> n >> m;
+
+  MAX_PHASE_SIZE = max(n, MAX_PHASE_SIZE);
 
   Graph G(n);
   for (int i = 0; i < m; ++i) {
